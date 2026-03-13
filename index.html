@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Abladeplan</title>
+<!-- PWA -->
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#0ea5e9"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Abladeplan"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f172a; --bg2: #1e293b; --border: rgba(255,255,255,0.08);
+  --text: #e2e8f0; --muted: #94a3b8; --dim: #64748b; --accent: #38bdf8;
+}
+body { min-height:100vh; background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f172a 100%); font-family:'IBM Plex Mono',monospace; color:var(--text); }
+::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-track{background:#1e293b} ::-webkit-scrollbar-thumb{background:#475569;border-radius:3px}
+input,select,textarea{outline:none;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:#f1f5f9;padding:6px 10px;font-family:'IBM Plex Mono',monospace;font-size:13px;width:100%;transition:all 0.2s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);background:rgba(56,189,248,0.08);box-shadow:0 0 0 2px rgba(56,189,248,0.15)}
+input.sm{padding:4px 6px;font-size:12px;text-align:center}
+select option{background:#1e293b;color:#f1f5f9}
+
+#topbar{position:sticky;top:0;z-index:100;background:rgba(0,0,0,0.4);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#0ea5e9,#6366f1);display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-title{font-family:'IBM Plex Sans',sans-serif;font-weight:700;font-size:18px;letter-spacing:-0.02em}
+.logo-sub{font-size:11px;color:#64748b;letter-spacing:0.08em}
+.topbar-actions{display:flex;gap:10px;align-items:center}
+#save-feedback{display:none;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);border-radius:6px;padding:6px 14px;font-size:12px;color:#22c55e}
+.btn{border:none;border-radius:8px;color:white;padding:10px 20px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em}
+.btn:hover{opacity:0.9;transform:translateY(-1px)}
+.btn-primary{background:linear-gradient(135deg,#0ea5e9,#6366f1)}
+.btn-primary:hover{box-shadow:0 4px 15px rgba(14,165,233,0.3)}
+.btn-ghost{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2)!important}
+.btn-danger{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3)!important;color:#ef4444!important}
+.btn-add{background:rgba(34,197,94,0.1);border:1px dashed rgba(34,197,94,0.4)!important;color:#22c55e!important;font-family:'IBM Plex Mono',monospace;font-size:12px}
+#main{padding:20px 24px;max-width:1200px;margin:0 auto}
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin-bottom:16px;overflow:hidden}
+.card-header{background:rgba(255,255,255,0.06);padding:10px 16px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-header-left{display:flex;align-items:center;gap:8px}
+.card-body{padding:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+label.field{display:flex;flex-direction:column;gap:4px}
+label.field span{font-size:11px;color:var(--dim);font-family:'IBM Plex Sans',sans-serif;text-transform:uppercase;letter-spacing:0.05em}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+th{font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase}
+.cell{padding:4px;min-width:90px}
+.label-cell{padding:6px 12px;font-size:12px;color:var(--muted);white-space:nowrap;font-family:'IBM Plex Sans',sans-serif}
+tr{border-top:1px solid rgba(255,255,255,0.05)}
+.fuel-th{padding:6px 4px;text-align:center;min-width:100px}
+.fuel-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;font-family:'IBM Plex Sans',sans-serif;margin:0 auto}
+.fuel-name{font-size:9px;color:#475569;margin-top:2px;font-weight:400;text-transform:none;letter-spacing:0}
+.kammer-grid{display:flex;gap:10px}
+.kammer-col{flex:1}
+.kammer-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'IBM Plex Sans',sans-serif;margin-bottom:6px}
+.tab-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tab-btn{padding:7px 16px;border-radius:6px;border:1px solid rgba(255,255,255,0.1)!important;background:transparent;color:var(--muted);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:12px;transition:all 0.2s}
+.tab-btn:hover{background:rgba(255,255,255,0.07);color:var(--text)}
+.tab-btn.active{background:rgba(56,189,248,0.15)!important;border-color:var(--accent)!important;color:var(--accent)!important}
+.diff-pos{color:#22c55e;font-weight:600} .diff-neg{color:#ef4444;font-weight:600} .diff-zero{color:var(--muted)}
+.check-row{display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:10px}
+.check-box{width:18px;height:18px;border-radius:4px;flex-shrink:0;border:2px solid #475569;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;margin-top:1px}
+.check-box.checked{border-color:var(--accent);background:var(--accent)}
+.check-box.checked::after{content:'✓';color:#0f172a;font-size:11px;font-weight:700}
+.check-label{font-size:12px;color:var(--muted);line-height:1.5;font-family:'IBM Plex Sans',sans-serif}
+#footer{text-align:center;padding:20px 0;font-size:11px;color:#334155;font-family:'IBM Plex Sans',sans-serif}
+
+/* ── PRINT ── */
+@media print {
+  @page { size: A4 portrait; margin: 0mm; }
+  body, #topbar, #main, #footer { display: none !important; }
+  #print-overlay { display: block !important; }
+}
+#print-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 210mm; height: 297mm;
+  overflow: hidden;
+}
+/* Every printed value */
+#print-overlay .f {
+  position: absolute;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8pt;
+  color: #000;
+  white-space: nowrap;
+  /* centered on column by default */
+  transform: translateX(-50%);
+  text-align: center;
+}
+/* Left-aligned (for text fields like Kennzeichen, Tankstelle) */
+#print-overlay .fl {
+  position: absolute;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8pt;
+  color: #000;
+  white-space: nowrap;
+  text-align: left;
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-icon">⛽</div>
+    <div>
+      <div class="logo-title">ABLADEPLAN</div>
+      <div class="logo-sub">DIGITALE TOURENERFASSUNG</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <div id="save-feedback">✓ Gespeichert</div>
+    <button class="btn btn-primary" onclick="handleSave()">💾 Speichern</button>
+    <button class="btn btn-ghost" onclick="handlePrint()">🖨 Auf Vordruck drucken</button>
+  </div>
+</div>
+
+<div id="main">
+  <div class="card">
+    <div class="card-header"><div class="card-header-left"><span style="color:#38bdf8">◆</span> Stammdaten</div></div>
+    <div class="card-body grid3">
+      <label class="field"><span>Kennzeichen</span><input id="kennzeichen" placeholder="z.B. XD83 ND87"/></label>
+      <label class="field"><span>Datum</span><input id="datum" type="date"/></label>
+      <label class="field"><span>Fahrer</span><input id="fahrer" placeholder="Name des Fahrers"/></label>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-header-left"><span style="color:#f59e0b">◆</span> Kammerbelegung &amp; Produkte</div></div>
+    <div class="card-body"><div class="kammer-grid" id="kammer-grid"></div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-header-left"><span style="color:#22c55e">◆</span> Beladungsdaten (Geladene Liter 15°C)</div></div>
+    <div class="card-body tbl-wrap"><table id="beladung-table"></table></div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-left"><span style="color:#a78bfa">◆</span> Abladestellen</div>
+      <div class="tab-bar" id="ablade-tabs"></div>
+    </div>
+    <div id="ablade-content"></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-header-left"><span style="color:#f472b6">◆</span> Gesamtabrechnung</div></div>
+    <div class="card-body tbl-wrap"><table id="gesamt-table"></table></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><div class="card-header-left"><span style="color:#fb923c">◆</span> Leeres Tankfahrzeug – Letztes Ladegut</div></div>
+      <div class="card-body" id="ladegut-section"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-header-left"><span style="color:#34d399">◆</span> Bemerkung</div></div>
+      <div class="card-body">
+        <textarea id="bemerkung" rows="5" placeholder="Bemerkungen zur Tour..." style="resize:vertical"></textarea>
+      </div>
+    </div>
+  </div>
+  <div id="footer">Abladeplan · Revision 01.01.2025 · Digitale Version</div>
+</div>
+
+<!-- PRINT OVERLAY: only numbers, positioned on the blank pre-printed form -->
+<div id="print-overlay"></div>
+
+<script>
+const FUEL_TYPES  = ["Super E10","Super E5","Super E5","Super Plus / V-Racing","Diesel","Diesel","V-Power DK / Heizöl"];
+const FUEL_SHORT  = ["E10","E5","E5+","SP/VR","DK","DK2","VPW"];
+const FUEL_COLORS = ["#22c55e","#3b82f6","#6366f1","#f59e0b","#ef4444","#dc2626","#8b5cf6"];
+const PRODUKT_OPT = ["","E10","E5","DK","E5+","Super Plus","V-Racing","Heizöl","-"];
+const LADEGUT_OPT = [
+  {val:"otto",    label:"UN 1203, Ottokraftstoff, 3, II, (D/E), umweltgefährdend"},
+  {val:"diesel",  label:"UN 1202, Dieselkraftstoff, 3, III, (D/E), Sondervorschrift 640L, umweltgefährdend"},
+  {val:"heizoel", label:"UN 1202, Heizöl, leicht, 3, III, (D/E), Sondervorschrift 640L, umweltgefährdend"},
+];
+
+let kammern       = Array.from({length:5},(_,i)=>({id:i+1,produkt:""}));
+let fuelData      = Array.from({length:7},()=>({restmenge:"",geladeneLiter:""}));
+let abladestellen = [newAblade(1)];
+let activeTab     = 0;
+let letztesFut    = "otto";
+
+function newAblade(num){return{id:num,tankstelle:"",groesse:Array(7).fill(""),vorpeilung:Array(7).fill(""),ablademenge:Array(7).fill(""),nachpeilung:Array(7).fill("")};}
+
+const gesamtEntladung = i=>abladestellen.reduce((s,a)=>s+(parseFloat(a.ablademenge[i])||0),0);
+const gesamtLadung    = i=>parseFloat(fuelData[i]?.geladeneLiter)||0;
+const differenz       = i=>gesamtLadung(i)-gesamtEntladung(i);
+const restmengeGes    = i=>(parseFloat(fuelData[i]?.restmenge)||0)+differenz(i);
+
+function render(){renderKammern();renderBeladung();renderAbladeTabs();renderAbladeContent();renderGesamt();renderLadegut();}
+
+function fuelHeader(){return FUEL_TYPES.map((ft,i)=>`<th class="fuel-th"><div class="fuel-badge" style="background:${FUEL_COLORS[i]}18;color:${FUEL_COLORS[i]};border:1px solid ${FUEL_COLORS[i]}33">${FUEL_SHORT[i]}</div><div class="fuel-name">${ft}</div></th>`).join("");}
+
+function renderKammern(){document.getElementById("kammer-grid").innerHTML=kammern.map((k,i)=>`<div class="kammer-col"><div class="kammer-num" style="background:${FUEL_COLORS[i%7]}22;color:${FUEL_COLORS[i%7]};border:1px solid ${FUEL_COLORS[i%7]}44">${k.id}</div><select onchange="kammern[${i}].produkt=this.value">${PRODUKT_OPT.map(p=>`<option ${k.produkt===p?"selected":""}>${p}</option>`).join("")}</select></div>`).join("");}
+
+function renderBeladung(){document.getElementById("beladung-table").innerHTML=`<thead><tr><th style="width:160px"></th>${fuelHeader()}</tr></thead><tbody><tr><td class="label-cell">Restmenge Liter</td>${fuelData.map((fd,i)=>`<td class="cell"><input class="sm" type="number" placeholder="—" value="${fd.restmenge}" oninput="fuelData[${i}].restmenge=this.value;renderGesamt()"/></td>`).join("")}</tr><tr><td class="label-cell">Geladene Liter 15°C</td>${fuelData.map((fd,i)=>`<td class="cell"><input class="sm" type="number" placeholder="—" value="${fd.geladeneLiter}" oninput="fuelData[${i}].geladeneLiter=this.value;renderGesamt()"/></td>`).join("")}</tr></tbody>`;}
+
+function renderAbladeTabs(){document.getElementById("ablade-tabs").innerHTML=abladestellen.map((a,i)=>`<button class="tab-btn ${i===activeTab?"active":""}" onclick="activeTab=${i};renderAbladeTabs();renderAbladeContent()">${i+1}. ${a.tankstelle||"Tankstelle"}</button>`).join("")+(abladestellen.length<4?`<button class="btn btn-add" onclick="addAblade()">+ Hinzufügen</button>`:"");}
+
+function renderAbladeContent(){
+  const a=abladestellen[activeTab],idx=activeTab;
+  const rows=[{field:"groesse",label:"Größe/Bezeichnung",type:"text"},{field:"vorpeilung",label:"Vorpeilung",type:"number"},{field:"ablademenge",label:"Ablademenge 15°C",type:"number"},{field:"nachpeilung",label:"Nachpeilung",type:"number"}].map(row=>`<tr><td class="label-cell">${row.label}</td>${a[row.field].map((v,i)=>`<td class="cell"><input class="sm" type="${row.type}" placeholder="—" value="${v}" oninput="abladestellen[${idx}]['${row.field}'][${i}]=this.value;renderGesamt()" style="${row.field==='ablademenge'?`border-color:${FUEL_COLORS[i]}44`:''}"/></td>`).join("")}</tr>`).join("");
+  document.getElementById("ablade-content").innerHTML=`<div style="padding:16px"><div style="display:flex;gap:12px;margin-bottom:16px;align-items:flex-end"><label class="field" style="flex:1"><span>Tankstelle</span><input placeholder="Name der Tankstelle" value="${a.tankstelle}" oninput="abladestellen[${idx}].tankstelle=this.value;renderAbladeTabs()"/></label>${abladestellen.length>1?`<button class="btn btn-danger" onclick="removeAblade(${idx})">✕ Entfernen</button>`:""}</div><div class="tbl-wrap"><table><thead><tr><th style="width:160px"></th>${fuelHeader()}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+function renderGesamt(){
+  const rows=[{label:"Gesamt-Entladung",fn:gesamtEntladung},{label:"Gesamt-Ladung",fn:gesamtLadung},{label:"Differenz",fn:differenz},{label:"Restmenge",fn:restmengeGes}].map(row=>{const cells=Array(7).fill(null).map((_,i)=>{const v=row.fn(i);let cls="",txt="";if(row.label==="Differenz"){cls=v>0?"diff-pos":v<0?"diff-neg":"diff-zero";txt=v!==0?(v>0?"+":"")+v:"—";}else txt=v?v.toLocaleString("de-DE"):`<span style="color:#334155">—</span>`;return`<td style="padding:6px 4px;text-align:center;font-size:13px;font-family:'IBM Plex Mono'"><span class="${cls}">${txt}</span></td>`;}).join("");return`<tr><td class="label-cell" style="${row.label==='Differenz'?'color:#e2e8f0;font-weight:600':''}">${row.label}</td>${cells}</tr>`;}).join("");
+  document.getElementById("gesamt-table").innerHTML=`<thead><tr><th style="width:160px"></th>${fuelHeader()}</tr></thead><tbody>${rows}</tbody>`;
+}
+
+function renderLadegut(){document.getElementById("ladegut-section").innerHTML=LADEGUT_OPT.map(opt=>`<div class="check-row" onclick="setLadegut('${opt.val}')"><div class="check-box ${letztesFut===opt.val?'checked':''}" id="chk-${opt.val}"></div><span class="check-label">${opt.label}</span></div>`).join("");}
+
+function addAblade(){if(abladestellen.length<4){abladestellen.push(newAblade(abladestellen.length+1));activeTab=abladestellen.length-1;render();}}
+function removeAblade(idx){abladestellen=abladestellen.filter((_,i)=>i!==idx).map((a,i)=>({...a,id:i+1}));activeTab=Math.max(0,activeTab-1);render();}
+function setLadegut(val){letztesFut=val;renderLadegut();}
+function handleSave(){const fb=document.getElementById("save-feedback");fb.style.display="block";setTimeout(()=>fb.style.display="none",2500);}
+
+// ──────────────────────────────────────────────────────────────────────────
+// PRINT OVERLAY
+// Coordinates measured from the blank A4 form PDF (210mm × 297mm)
+// Each .f element is centered on the column; .fl is left-aligned
+// ──────────────────────────────────────────────────────────────────────────
+
+// Column X centers (mm) – measured from PDF
+const CX = [36.0, 58.1, 80.0, 101.9, 124.0, 146.1, 168.3];
+// Kammer column X centers (mm)
+const KX = [35.9, 58.5, 81.2, 103.8, 126.4];
+
+// Abladestellen row Y positions (mm)
+const AY = [
+  {ts:47.9, gr:52.5, vp:56.5, am:60.5, np:64.5},
+  {ts:69.0, gr:73.5, vp:77.5, am:81.5, np:85.5},
+  {ts:90.1, gr:94.5, vp:98.5, am:102.5,np:106.5},
+  {ts:111.2,gr:115.5,vp:119.5,am:123.5,np:127.5},
+];
+
+function f(x,y,txt,color){
+  if(txt===null||txt===undefined||txt==="") return "";
+  return `<div class="f" style="left:${x}mm;top:${y}mm${color?`;color:${color}`:""}">${txt}</div>`;
+}
+function fl(x,y,txt){
+  if(!txt) return "";
+  return `<div class="fl" style="left:${x}mm;top:${y}mm">${txt}</div>`;
+}
+
+function handlePrint(){
+  const kennzeichen = document.getElementById("kennzeichen").value;
+  const datumVal    = document.getElementById("datum").value;
+  const fahrer      = document.getElementById("fahrer").value;
+  const bemerkung   = document.getElementById("bemerkung").value;
+  const fmtDatum    = datumVal ? new Date(datumVal).toLocaleDateString("de-DE") : "";
+
+  // Build positioned elements as inline styles in a new window
+  // All coordinates in mm, measured from the blank A4 form
+  const F  = (x,y,t,extra="") => t!=null&&t!==""
+    ? `<div style="position:absolute;left:${x}mm;top:${y}mm;font-family:Arial,sans-serif;font-size:8.5pt;color:#000;white-space:nowrap;transform:translateX(-50%);text-align:center;${extra}">${t}</div>`
+    : "";
+  const FL = (x,y,t,extra="") => t
+    ? `<div style="position:absolute;left:${x}mm;top:${y}mm;font-family:Arial,sans-serif;font-size:8.5pt;color:#000;white-space:nowrap;${extra}">${t}</div>`
+    : "";
+
+  let body = "";
+
+  // ── Header ──────────────────────────────────────────────────────────────
+  body += FL(44.0,  7.0, kennzeichen);
+  body += FL(125.5, 7.0, fmtDatum);
+
+  // ── Kammerbelegung: Produkt row ──────────────────────────────────────────
+  kammern.forEach((k,i) => { body += F(KX[i], 19.5, k.produkt); });
+
+  // ── Beladungsdaten ───────────────────────────────────────────────────────
+  fuelData.forEach((fd,i) => {
+    body += F(CX[i], 37.5, fd.restmenge);
+    body += F(CX[i], 42.0, fd.geladeneLiter);
+  });
+
+  // ── Abladestellen ────────────────────────────────────────────────────────
+  abladestellen.forEach((a,ai) => {
+    const Y = AY[ai];
+    if(!Y) return;
+    body += FL(55.0, Y.ts+0.5, a.tankstelle);
+    a.groesse.forEach((v,ci)    => { body += F(CX[ci], Y.gr, v); });
+    a.vorpeilung.forEach((v,ci) => { body += F(CX[ci], Y.vp, v); });
+    a.ablademenge.forEach((v,ci)=> { body += F(CX[ci], Y.am, v); });
+    a.nachpeilung.forEach((v,ci)=> { body += F(CX[ci], Y.np, v); });
+  });
+
+  // ── Gesamtabrechnung ─────────────────────────────────────────────────────
+  const GY = {ent:136.5, lad:140.5, dif:144.5, rest:148.5};
+  CX.forEach((cx,i) => {
+    const ge=gesamtEntladung(i), gl=gesamtLadung(i), di=differenz(i), re=restmengeGes(i);
+    body += F(cx, GY.ent, ge||"");
+    body += F(cx, GY.lad, gl||"");
+    if(di!==0) body += F(cx, GY.dif, (di>0?"+":"")+di, `font-weight:700;color:${di<0?"red":"#000"}`);
+    body += F(cx, GY.rest, re||"");
+  });
+
+  // ── Letztes Ladegut: Kreuz auf den richtigen Kreis ───────────────────────
+  const CHK = {otto:268.2, diesel:272.0, heizoel:275.5};
+  body += FL(5.5, CHK[letztesFut], "✗", "font-size:11pt;font-weight:900;");
+
+  // ── Fahrer & Bemerkung ───────────────────────────────────────────────────
+  body += FL(14.0, 282.0, fahrer);
+  body += FL(72.0, 282.0, bemerkung);
+
+  // Open new window and print
+  const win = window.open("", "_blank", "width=900,height=1200");
+  win.document.write(`<!DOCTYPE html>
+<html lang="de"><head>
+<meta charset="UTF-8"/>
+<title>Abladeplan Druck</title>
+<style>
+  @page { size: A4 portrait; margin: 0mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 210mm; height: 297mm; background: white; }
+  #page { position: relative; width: 210mm; height: 297mm; overflow: hidden; }
+</style>
+</head><body>
+<div id="page">${body}</div>
+<script>
+  window.onload = function() {
+    window.focus();
+    window.print();
+  };
+<\/script>
+</body></html>`);
+  win.document.close();
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.getElementById("datum").value = new Date().toISOString().split("T")[0];
+render();
+
+// ── PWA SERVICE WORKER ────────────────────────────────────────────────────────
+if("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").then(() => {
+    console.log("Service Worker registered – App läuft offline");
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#0f172a"/>
+  <rect x="40" y="40" width="432" height="432" rx="60" fill="url(#g)"/>
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0ea5e9"/>
+      <stop offset="100%" style="stop-color:#6366f1"/>
+    </linearGradient>
+  </defs>
+  <!-- Fuel drop icon -->
+  <text x="256" y="320" font-size="220" text-anchor="middle" fill="white">⛽</text>
+  <!-- "A" label -->
+  <rect x="60" y="380" width="392" height="72" rx="12" fill="rgba(255,255,255,0.15)"/>
+  <text x="256" y="432" font-size="42" font-family="Arial" font-weight="bold" text-anchor="middle" fill="white">ABLADEPLAN</text>
+</svg>
